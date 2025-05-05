@@ -1,8 +1,10 @@
 pipeline {
     agent any
     tools {
-        maven "mymaven"  // Name matches Jenkins' Global Tool Config
-        
+        maven 'mymaven' // Ensure this matches your Jenkins Maven installation name
+     }
+    environment {
+        POM_PATH = 'pom.xml' // Set this to the relative path of your pom.xml
     }
     stages {
         stage('Checkout') {
@@ -10,18 +12,24 @@ pipeline {
                 git url: 'https://github.com/awstrainersz/mavenbuild.git', branch: 'master'
             }
         }
+        stage('List Files (Debug)') {
+            steps {
+                sh 'ls -l'
+                sh 'ls -l ' // List files in the subfolder for verification
+            }
+        }
         stage('Build') {
             steps {
-                sh 'mvn clean package'
+                sh "mvn -f ${POM_PATH} clean package"
             }
         }
         stage('Test') {
             steps {
-                sh 'mvn test'
+                sh "mvn -f ${POM_PATH} test"
             }
             post {
                 always {
-                    junit '**/target/surefire-reports/*.xml'  // Publish test results
+                    junit 'my-app/target/surefire-reports/*.xml' // Adjust if your reports are elsewhere
                 }
             }
         }
